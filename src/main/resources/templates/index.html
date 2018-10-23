@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>文档共享中心</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css"  href="dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="dist/css/fileinput.css">
+    <style>
+        #file_list{
+            padding-left: 20px;
+        }
+        #file_list li {
+            line-height: 3rem;
+            border-bottom: 1px solid #dddddd;
+        }
+        #file_list li span {
+            margin-right: 1rem;
+        }
+        .footer{
+            margin-top: 30px;
+        }
+        .tab-pane {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航条 -->
+    <div class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">华贸银行共享文档</a>
+                <a class="navbar-toggle" data-toggle="collapse" href="#menu">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+            </div>
+            <div id="menu" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown hidden"><a data-toggle="dropdown" href="#">菜单<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">联系我们</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#">关于</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="/">首页</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a data-toggle="modal" href="#login">登录</a></li>
+                </ul>
+                <form class="navbar-form navbar-right">
+                    <div class="form-group has-feedback">
+                        <label for="kw" class="sr-only">search key word</label>
+                        <input type="text" class="form-control" placeholder="搜索">
+                        <span class="glyphicon glyphicon-search form-control-feedback"></span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- 主体 -->
+    <div class="main">
+        <div class="container">
+            <!-- 内容部分 -->
+            <div class="row">
+                <div class="col-xs-12">
+                    <!-- 面包屑导航 -->
+                    <ol class="breadcrumb">
+                        <li><a href="/" class="glyphicon glyphicon-home"></a></li>
+                        <li th:each="d:${pathlist}"><a th:href="@{/index.html(currentPath=${d.rpath})}"  ><span th:text="${d.pname}">链接1</span></a></li>
+                    </ol>
+                    
+                    <input type="hidden" id="currentPath" th:value="${currentPath}"/>
+                    <input type="hidden" id="parentPath" th:value="${parentPath}"/>
+                </div>
+                <!-- 显示失败信息  -->
+                <div class="col-xs-12">
+                    <div th:if="${show_fail}" class="alert alert-warning alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <strong>Warning!</strong>
+                            <p th:text="${show_msg}">异常</p>
+                    </div>
+                </div>
+                <!-- 显示成功信息  -->
+                <div class="col-xs-12">
+                    <div th:if="${show_success}" class="alert alert-success alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <strong>Success!</strong>
+                            <p th:text="${show_msg}">成功</p>
+                    </div>
+                </div>
+                <div class="col-xs-12">
+                    <ul id="file_list" class="list-unstyled">
+                        <li>
+                            <div class="row">
+                                <div class="col-xs-12 col-md-5">
+                                    <a th:href="@{/index.html(currentPath=${parentPath})}" class=""><span class="glyphicon glyphicon-folder-open"></span><b>..</b></a>
+                                </div>
+                                <div class="col-xs-2 col-md-1">
+                                    <i>大小</i>
+                                </div>
+                                <div class="hidden-xs col-md-2">
+                                    <i>上传时间</i>
+                                </div>
+                                <div class="cold-xs-4 col-md-2">
+                                    <i>上传人</i>
+                                </div>
+                                <div class="cold-xs-4 col-md-2">
+                                    <a href="#" data-toggle="modal" data-target="#upload_modal" ><span class="glyphicon glyphicon-plus"></span></a>
+                                    <!--  <a href="#" th:onclick="javascript:fun_del_link(0, -1)"><span class="glyphicon glyphicon-trash"></span></a> -->
+                                    <a th:href="@{/index.html(currentPath=${currentPath})}"><span class="glyphicon glyphicon-refresh"></span></a>
+                                </div>
+                            </div>
+                        </li>
+                        <li th:each="d:${linklist}">
+                            <div class="row">
+                                <div class="col-xs-12 col-md-5">
+                                    <a th:href="${d.getLinkaddr()}" target="_blank" class=""><span class="glyphicon glyphicon-link"></span><span  th:text="${d.getName()}">链接1</span></a>
+                                </div>
+                                <div class="col-xs-2 col-md-1">
+                                    <i> </i>
+                                </div>
+                                <div class="hidden-xs col-md-2">
+                                    <i th:text="${d.getCreatetime()}"></i>
+                                </div>
+                                <div class="cold-xs-4 col-md-2">
+                                    <i th:text="${d.getAuthor()}">admin</i>
+                                </div>
+                                <div class="cold-xs-4 col-md-2">
+                                    <a th:href="${d.getLinkaddr()}" target="_blank" ><span class="glyphicon glyphicon-hand-right"></span></a>
+                                    <a href="#" th:onclick="javascript:fun_del_link([[${d.name}]], 3)"><span class="glyphicon glyphicon-trash"></span></a>
+                                </div>
+                            </div>
+                        </li>
+                        <li th:each="d:${dirlist}">
+                            <div class="row">
+                                <div class="col-xs-12 col-md-5">
+                                    <a th:href="@{/index.html(currentPath=${currentPath},subPath=${d.getName()})}" class=""><span class="glyphicon glyphicon-folder-close"></span><span  th:text="${d.getName()}">目录</span></a>
+                                </div>
+                                <div class="col-xs-2 col-md-1">
+                                    <i> </i>
+                                </div>
+                                <div class="hidden-xs col-md-2">
+                                    <i th:text="${d.getCreatetime()}"></i>
+                                </div>
+                                <div class="cold-xs-4 col-md-2">
+                                    <i th:text="${d.getAuthor()}"></i>
+                                </div>
+                                <div class="cold-xs-4 col-md-2">
+                                    <a th:href="@{/download(currentPath=${currentPath},subPath=${d.getName()},download=1)}"><span class="glyphicon glyphicon-download-alt"></span></a>
+                                    <a href="#" th:onclick="javascript:fun_del_link([[${d.name}]], 2)" ><span class="glyphicon glyphicon-trash"></span></a>
+                                    <a th:href="@{/index.html(currentPath=${currentPath},subPath=${d.getName()})}"><span class="glyphicon glyphicon-folder-open"></span></a>
+                                </div>
+                            </div>
+                        </li>
+                        <li th:each="d:${filelist}">
+                            <div class="row">
+                                <div class="col-xs-12 col-md-5">
+                                    <a th:href="@{/download(currentPath=${currentPath}, fileName=${d.getName()})}" class=""><span class="glyphicon glyphicon-file"></span><span  th:text="${d.getName()}">文件1</span></a>
+                                </div>
+                                <div class="col-xs-2 col-md-1">
+                                    <i th:text="${d.getSize()}">1M</i>
+                                </div>
+                                <div class="hidden-xs col-md-2">
+                                    <i th:text="${d.getCreatetime()}"></i>
+                                </div>
+                                <div class="cold-xs-4 col-md-2">
+                                    <i th:text="${d.getAuthor()}">admin</i>
+                                </div>
+                                <div class="cold-xs-4 col-md-2">
+                                    <a th:href="@{/download(currentPath=${currentPath},fileName=${d.getName()})}"><span class="glyphicon glyphicon-download-alt"></span></a>
+                                    <a href="#" th:onclick="javascript:fun_del_link([[${d.name}]], 1)"><span class="glyphicon glyphicon-trash"></span></a>
+                                </div>
+                            </div>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- footer -->
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <p class="text-center">@Copyright 河南华贸银行</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增操作 modal -->
+    <div id="upload_modal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">上传: 当前目录<span id="up_curpath">path</span> </h4>
+                </div>
+                <div class="modal-body">
+                    <!-- 分三个标签页 , 上传文件 , 创建目录  , 创建连接  -->
+                    <ul class="nav nav-tabs">
+                        <li  class="hidden"><a  data-toggle="tab" href="#t1">上传文件</a></li>
+                        <li class="active"><a  data-toggle="tab" href="#t11">上传文件</a></li>
+                        <li><a  data-toggle="tab" href="#t2">创建目录</a></li>
+                        <li><a  data-toggle="tab" href="#t3">创建链接</a></li>
+                    </ul>
+                    <div class="tab-content" >
+                        <div class="tab-pane hidden" id="t1">
+                            <!-- 上传文件 -->
+                            <form action="/upload">
+                                <div class="form-group">
+                                    <label class="control-label" for="upfile2">上传文档</label>
+                                    <input id="upfile2" type="file" class="file"  name="upfile2" multiple>
+                                    <input  type="hidden" class="form-control" id="uppath2" name="uppath2" value="456">
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="tab-pane active" id="t11">
+                            <!-- 上传文件 -->
+                            <div class="">
+                                <input id="upfile" type="file" class="file"  name="upfile" multiple>
+                                <input  type="hidden"  id="uppath" name="uppath" value="456">
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="t2">
+                            <!-- 创建目录 -->
+                            <form action="/createdir">
+                                <div class="form-group">
+                                    <label class="control-label" for="crepaths">目录名称(支持多级目录,使用\分割)</label>
+                                    <input id="crepaths" type="text" class="form-control"  name="crepaths" />
+                                    <input  type="hidden" class="form-control" id="crecurpath" name="crecurpath" value="456">
+                                </div>
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">确认</button>
+                            </form>
+                        </div>
+                        <div class="tab-pane " id="t3">
+                            <!-- 创建链接  -->
+                            <form action="/createlink">
+                                <div class="form-group">
+                                    <label class="control-label" for="linkname">连接名称</label>
+                                    <input id="linkname" type="text" class="form-control"  name="linkname" />
+                                    <input  type="hidden" class="form-control" id="linkcurpath" name="linkcurpath" value="456">
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label" for="linkaddr">连接地址</label>
+                                    <input id="linkaddr" type="text" class="form-control"  name="linkaddr" />
+                                </div>
+                                <div class="form-group ">
+                                    <button type="button" class="btn btn-default " data-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary ">确认</button>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <!-- 删除操作 modal -->
+    <div id="delete_modal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">确认</h4>
+                </div>
+                <div class="modal-body">
+                    <form action="/del">
+                        <div class="form-group">
+                            <label class="text-left text-danger" for="delname">确认删除共享文档: 
+                            <p class="text-center text-warning" id='waringname'></p></label>
+                            <input  type="text" class="form-control" id="delname" name="delname" value="123">
+                            <input  type="text" class="form-control" id="delpath" name="delpath" value="456">
+                        </div>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">确认删除</button>
+                    </form>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <script src="dist/js/jquery-1.11.3.js"></script>
+    <script src="dist/js/bootstrap.js"></script>
+    <script src="dist/js/fileinput.js"></script>
+    <script>
+        // 新增  
+        // 在新增对话框显示时, 添加当前路径值   
+        $('#upload_modal').on('show.bs.modal', function (e) {
+        	  $('#up_curpath').text($('#currentPath').val());
+        	  $('#linkcurpath').val($('#currentPath').val());
+        	  $('#crecurpath').val($('#currentPath').val());
+        	  $('#uppath').val($('#currentPath').val());
+        	  $('#uppath2').val($('#currentPath').val());
+        });
+        
+        $('#upfile').fileinput({
+            uploadUrl: "/batchupload", //上传的地址
+            allowedFileExtensions: ['jpg', 'gif', 'png','doc','docx','pdf','ppt','pptx','txt', 'xls', 'xlsx'],//接收的文件后缀
+            maxFilesNum : 50,//上传最大的文件数量
+            //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+            uploadAsync: true, //默认异步上传
+            showUpload: true, //是否显示上传按钮
+            showRemove : true, //显示移除按钮
+            showPreview : true, //是否显示预览
+            showCaption: false,//是否显示标题
+            browseClass: "btn btn-primary", //按钮样式
+            //dropZoneEnabled: true,//是否显示拖拽区域
+            //minImageWidth: 50, //图片的最小宽度
+            //minImageHeight: 50,//图片的最小高度
+            //maxImageWidth: 1000,//图片的最大宽度
+            //maxImageHeight: 1000,//图片的最大高度
+            maxFileSize: 0,//单位为kb，如果为0表示不限制文件大小
+            //minFileCount: 0,
+            maxFileCount: 4, //表示允许同时上传的最大文件个数
+            enctype: 'multipart/form-data',
+            validateInitialCount:true,
+            previewFileIcon: "<i class='glyphicon glyphicon-king'></i>",
+            msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+            uploadExtraData: {'curpath': $('#currentPath').val()}
+
+        }).on('filepreupload', function(event, data, previewId, index) {     //上传中
+            var form = data.form, files = data.files, extra = data.extra,
+            response = data.response, reader = data.reader;
+            console.log('文件正在上传');
+        }).on("fileuploaded", function (event, data, previewId, index) {    //一个文件上传成功
+            console.log('文件上传成功！'+data.id);
+
+        }).on('fileerror', function(event, data, msg) {  //一个文件上传失败
+            console.log('文件上传失败！'+data.id);
+        });
+        
+        // 删除按钮时, 调用显示 modal 
+        function fun_del_link(namepath, type) {
+        	
+        	var name = namepath;
+        	
+        	if(type == 3 ) {
+        		name = name + ".link";
+        	}
+        	
+        	var ss = "[根目录" + $('#currentPath').val() + "]下名为: " + name + " 的";
+
+        	if (type == 3) {
+        		ss =  ss + "链接!";
+        	} else if (type == 1) {
+        		ss = ss + "文件!";
+        	} else {
+        		ss = ss + "目录及其下所有内容!";
+        	}
+        	
+        	$('#waringname').val(ss);
+        	$('#waringname').text(ss);
+        	
+        	$('#delname').val(name);
+        	$('#delpath').val($('#currentPath').val());
+        	$('#delete_modal').modal('show');
+        	
+        }
+        
+        // 在删除对话框关闭时, 清空path值  
+        $('#delete_modal').on('hidden.bs.modal', function (e) {
+        	  $('#waringname').val('');
+        	  $('#waringname').text('');
+        });
+        
+        // 删除modal 提交时  
+        function btn_del_submit() {
+        	// 
+        	alert("shanchu:" + $('#delpath').val()) ;
+        }
+    </script>
+    <script>
+
+    </script>
+</body>
+</html>
