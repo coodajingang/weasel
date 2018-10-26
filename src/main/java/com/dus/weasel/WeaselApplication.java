@@ -7,13 +7,17 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+
+import com.dus.weasel.config.FileIconCssConfig;
 
 @SpringBootApplication
+@ComponentScan(basePackages= {"com.dus.weasel", "org.jodconverter", "org.dus"})
 public class WeaselApplication {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		
+		System.out.println("start WeaselApplication");
 		SpringApplication.run(WeaselApplication.class, args);
 	}
 	
@@ -29,6 +33,8 @@ public class WeaselApplication {
                 System.out.println(beanName);
             }
 
+            FileIconCssConfig icon = (FileIconCssConfig) ctx.getBean("fileIconCssConfig");
+            System.out.println(icon.toString());
         };
     }
 

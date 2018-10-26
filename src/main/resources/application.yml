@@ -7,6 +7,11 @@ logging:
             core: DEBUG
 sharefileroot: "E:\\logs"
 download_tmproot: "E:\\logss\\download"
+convert_pdfroot: "E:\\logss\\preview"
+
+# pdf转换时, 生成的.wait文件存活时间 . 
+preview:
+  reconverttm: 60000
 
 spring:
   servlet:
@@ -16,3 +21,49 @@ spring:
 
 server:
   port: 8080
+
+fileformat:
+  defaultcss: "glyphicon glyphicon-file fonticon"
+  iconclass:
+    -
+      ext: "pdf"
+      css: "fileicon fileicon-pdf"
+    -
+      ext: "doc,docx"
+      css: "fileicon fileicon-small-doc"
+    -
+      ext: "ppt,pptx"
+      css: "fileicon fileicon-small-ppt"
+    -
+      ext: "xls,xlsx"
+      css: "fileicon fileicon-small-xls"
+    -
+      ext: "mp4,av,av1,wmv,mpeg1,mpeg2,mpeg4,flv,mpg,mov,mpeg,rm,rmvb,3gp,m4v,mkv,dat,flv,vob"
+      css: "fileicon fileicon-video"
+    -
+      ext: "mp3,act,rec,wma,wav"
+      css: "fileicon fileicon-small-mp3"
+    -
+      ext: "jpg,png,gif,jpeg,bmp"
+      css: "fileicon fileicon-small-pic"
+    -
+      ext: "txt,log"
+      css: "fileicon fileicon-small-txt"
+    -
+      ext: "zip,rar,gz,7z"
+      css: "fileicon fileicon-zip"
+    -
+      ext: "link"
+      css: "fileicon fileicon-links"
+    -
+      ext: "html,htm"
+      css: "fileicon fileicon-sys-s-web"
+  allowpreview: "pdf,doc,docx,ppt,pptx,jpg,png,gif,jpeg,bmp,txt,log, html, htm"
+  allowconvert: "doc,docx,ppt,pptx"
+
+jodconverter:
+  local:
+    enabled: true
+    portNumbers: "2002,2003"
+    officeHome: ""
+      

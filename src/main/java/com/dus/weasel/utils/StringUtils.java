@@ -82,4 +82,11 @@ public class StringUtils {
 			return str1.equals(str2);
 		}
 	}
+
+
+	
+	public static String join(String[] tmps, String delimiter) {
+		// TODO Auto-generated method stub
+		return String.join(delimiter, tmps);
+	}
 }

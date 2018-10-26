@@ -1,0 +1,121 @@
+/* 默认字体,颜色 */ 
+body, buttton, input, select , textarea {
+    font-family: "Microsoft YaHei", arial, SimSun, "宋体";
+    /* 12px/1.5 tahoma,arial; */
+    color: #666666;
+}
+
+#file_list{
+    padding-left: 20px;
+}
+#file_list li {
+    /* 增加行高 文字居中  */
+    border-bottom: 1px solid #dddddd;
+}
+#file_list li span {
+    margin-right: 1rem;
+}
+.footer{
+    margin-top: 30px;
+}
+.tab-pane {
+    padding: 20px;
+}
+
+#file_list a {
+    /* 去掉下滑线  */
+    text-decoration: none;
+    cursor: pointer;
+    height: 4rem;
+    line-height: 4rem;
+
+    /* 字体颜色  */
+    color: #424e67;
+}
+
+#file_list i {
+    height: 4rem;
+    line-height: 4rem;
+}
+
+#file_list a:hover {
+    text-decoration: none;
+    color: #337ab7;
+}
+#file_list > li:hover {
+    background-color: #f6faff;
+}
+
+#file_list > li:hover a {
+    color: #337ab7;
+}
+
+/* 文件图标类 */ 
+.fileicon {
+    display: inline-block;
+    width: 26px;
+    height:26px;
+    position: relative;
+    top: 8px;
+    left:2px;
+}
+.fileicon-zip, .fileicon-pdf, .fileicon-doc, .fileicon-xls, .fileicon-sys-s-web ,
+.fileicon-ipa, .fileicon-vsd, .fileicon-pages, .fileicon-numbers, .fileicon-fonts, .fileicon-code, .fileicon-web, .fileicon-links, .fileicon-eps, .fileicon-swf, .fileicon-video, .fileicon-zip, .fileicon-rar 
+.fileicon-small-bt, .fileicon-small-dws, .fileicon-small-code, .fileicon-small-txt, .fileicon-small-pdf, .fileicon-small-doc, .fileicon-small-ppt, .fileicon-small-xls, .fileicon-small-vsd, .fileicon-small-pic, .fileicon-small-mmap, .fileicon-small-xmind, .fileicon-small-mm, .fileicon-small-mp3, .icon-play-music, .default-small, .dir-multi-small, .dir-multi-middle, .dir-small,.fileicon-dir, .dir-cang-small, .dir-app-small, .dir-apps-small, .dir-backup-small, .dir-share-middle, .dir-phone-small, .fileicon-sys-s-exe, .fileicon-sys-s-apk, .fileicon-sys-s-psd, .fileicon-sys-s-key, .fileicon-sys-s-ai, .fileicon-default, .fileicon-parent-dir{
+    background-image: url(../img/icons_z.png);
+    background-repeat: no-repeat;
+}
+.fileicon-video {
+    background-position: -596px -1630px;
+}
+.dir-small, .fileicon-dir {
+    background-position: -594px -862px;
+}
+.fileicon-parent-dir {
+    background-position: -596px -936px;
+}
+.fileicon-default {
+    background-position: -596px -1698px;
+}
+.fileicon-links {
+    background-position: -596px -1493px;
+}
+.fileicon-small-zip, .fileicon-zip, .fileicon-rar {
+    background-position: -596px -1664px;
+}
+.fileicon-small-pdf, .fileicon-pdf {
+    background-position: -596px -136px;
+}
+.fileicon-small-txt {
+    background-position: -596px -102px;
+}
+
+.fileicon-sys-s-web {
+    background-position: -594px -1458px;
+}
+
+.fileicon-small-pic {
+    background-position: -596px -306px;
+}
+.fileicon-small-doc {
+    background-position: -596px -170px;
+}
+
+.fileicon-small-xls {
+    background-position: -596px -238px;
+}
+
+.fileicon-small-ppt {
+    background-position: -596px -204px;
+}
+
+.fileicon-small-mp3 {
+    background-position: -596px -442px;
+}
+
+.fonticon {
+    font-size: 2.5rem;
+    line-height: 2.5rem;
+    top:5px;
+    left:3px;
+}

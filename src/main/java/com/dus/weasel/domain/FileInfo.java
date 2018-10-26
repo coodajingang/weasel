@@ -51,6 +51,14 @@ public class FileInfo {
 
 	private static final String dateFormatString = "yyyyMMddHHmm";
 	
+	// 文件图标的 css 类 
+	private String iconClass;
+	
+	// 是否允许预览 
+	private boolean allowpreview;
+	
+	// 预览文件名  
+	private String viewName;
 	
 	/**
 	 * 创建FileInfo , 当为link时, 需要传入type
@@ -109,6 +117,18 @@ public class FileInfo {
 				}
 			}
 		}
+		
+		// 若是普通文件 , 则获取其图标 iconClass 
+		if (f.isFile() && !StringUtils.equals(type, "3")) {
+			finfo.setIconClass(FileUtil.getIconClass(f));
+			
+			// 判断普通文件是否允许预览  
+			finfo.setAllowpreview(FileUtil.allowpreview(f));
+			
+			// 判断转换后的文件名称 
+			finfo.setViewName(FileUtil.previewFileName(finfo.getName()));
+
+		}
 		return finfo;
 	}
 	
@@ -116,7 +136,8 @@ public class FileInfo {
 	public String toString() {
 		return "FileInfo [abpath=" + abpath + ", relpath=" + relpath + ", name=" + name + ", size=" + size
 				+ ", createtime=" + createtime + ", author=" + author + ", linkaddr=" + linkaddr + ", type=" + type
-				+ ", file=" + file + "]";
+				+ ", file=" + file + ", iconClass=" + iconClass + ", allowpreview=" + allowpreview + ", viewName="
+				+ viewName + "]";
 	}
 
 	public String getAbpath() {
@@ -190,7 +211,30 @@ public class FileInfo {
 	public void setRelpath(String relpath) {
 		this.relpath = relpath;
 	}
-	
+
+	public String getIconClass() {
+		return iconClass;
+	}
+
+	public void setIconClass(String iconClass) {
+		this.iconClass = iconClass;
+	}
+
+	public boolean isAllowpreview() {
+		return allowpreview;
+	}
+
+	public void setAllowpreview(boolean allowpreview) {
+		this.allowpreview = allowpreview;
+	}
+
+	public String getViewName() {
+		return viewName;
+	}
+
+	public void setViewName(String viewName) {
+		this.viewName = viewName;
+	}
 	
 	
 }

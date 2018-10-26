@@ -2,15 +2,22 @@ package com.dus.weasel.controller;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+
+import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.dus.weasel.domain.FileDomain;
+import com.dus.weasel.preview.ConvertRunnable;
 import com.dus.weasel.utils.FileUtil;
 import com.dus.weasel.utils.StringUtils;
 
@@ -21,6 +28,14 @@ public class IndexController {
 	
 	@Value("${sharefileroot}")
 	private String fileRoot;
+	@Value("${convert_pdfroot}")
+	private String convert_pdfroot;
+	
+	@Value("${preview.reconverttm}")
+	private long reconverttm;
+	
+	@Resource(name="convertThreadPool")
+	private ExecutorService convertservice;
 	
 	/**
 	 * curpath :  显示当前路径文件列表 , 空时显示为根路径 ;
@@ -88,7 +103,30 @@ public class IndexController {
 				isfail = true;
 				msg = "删除操作异常," + e.getMessage();
 			}
-
+			
+			// 同步删除预览文件  
+			if (delfile.isFile() && FileUtil.allowpreview(delfile)) {
+				String prename = FileUtil.previewFileName(delname);
+				String prepath = FileUtil.contactPath(this.convert_pdfroot, delpath, prename);
+				logger.debug("同步删除预览文件!");
+				File f = new File(prepath);
+				
+				if (f.exists()) {
+					f.delete();
+				}
+			}
+			
+			if (delfile.isDirectory()) {
+				logger.debug("同步删除预览目录!");
+				File predir = new File(FileUtil.contactPath(this.convert_pdfroot, delpath, delname));
+				try {
+					FileUtil.deleteFile(predir);
+				} catch (Exception e) {
+					logger.debug("删除操作异常", e);
+					isfail = true;
+					msg = "删除操作异常," + e.getMessage();
+				}
+			}
 		} else {
 			isfail = true;
 			msg = "待删除文件不存在!";
@@ -246,6 +284,90 @@ public class IndexController {
 			view.addObject("show_success", true);
 			view.addObject("show_msg", "创建目录成功!");
 		}
+		return view;
+	}
+	
+	/**
+	 * 请求预览pdf文件 
+	 * th:href="@{/preview(currentPath=${currentPath}, fileName=${d.getName()})}" 
+	 */
+	@GetMapping("/preview")
+	public ModelAndView preview(String currentPath, String fileName) {
+		logger.info("预览文件请求:  " + currentPath + " " + fileName);
+		
+		ModelAndView view = new ModelAndView("preview");
+		
+		String prefilename = FileUtil.previewFileName(fileName);
+		
+		String viewpath = FileUtil.contactPath("viewroot" ,currentPath, prefilename);
+		String oripath = FileUtil.contactPath(this.fileRoot, currentPath, fileName);
+		String prepath = FileUtil.contactPath(this.convert_pdfroot, currentPath, prefilename);
+		String prewaitpath = prepath + ".wait";
+		
+		File orifile = new File(oripath);
+
+		// 转换文件系统路径 到  url路径 
+		viewpath = FileUtil.toUrlPath(viewpath);
+		
+		logger.debug("转换文件的URL路径为:" + viewpath);
+		
+		// showmsg  : 1-错误  2-存在 3-正在转换 
+		// 1. 检查路径中文件是否存在  (应该都存在)  
+		if (!orifile.exists()) {
+			logger.info("待预览文件不存在: 请检查:" + currentPath + " " + fileName);
+			view.addObject("showmsg", 1);
+			view.addObject("msg", "文件不存在,请检查:" + currentPath + " " + fileName);
+			return view;
+		}
+		
+		// 2. 检查文件是否允许预览 
+		if (!FileUtil.allowpreview(orifile)) {
+			logger.info("该文件不允许预览: 请检查:" + currentPath + " " + fileName);
+			view.addObject("showmsg", 1);
+			view.addObject("msg", "该文件不允许预览,请检查:" + currentPath + " " + fileName);
+			return view;
+		}
+		
+		// 2. 检查pdf是否已经生成 , 没有生成 则新增任务进行转换  
+		File prefile = new File(prepath);
+		if (prefile.exists()) {
+			logger.debug("预览文件已经生成 , 直接返回 ");
+			view.addObject("previewurl", viewpath);
+			view.addObject("showmsg", 2);
+			view.addObject("msg", "预览文件已经生成,马上刷新!");
+			view.addObject("refreshtm", 200);
+			return view;
+		}
+		
+		// 3. 若没有生成  ,则检查.wait是否存在  , 存在则检查时间戳  
+		File prewaitfile = new File(prewaitpath);
+		
+		boolean reconvert = false;
+		if (prewaitfile.exists()) {
+			// 检查时间戳  
+			long creattm = prewaitfile.lastModified();
+			
+			if ((System.currentTimeMillis() - creattm) > this.reconverttm) {
+				logger.info("超时未转换完成 , 重新转换 !");
+				// 3-1. 重写wait文件 
+				// 3-2. 启动新转换任务 
+				reconvert = true;
+			}
+		}
+		
+		if (!prewaitfile.exists() || reconvert) {
+			// 3-2. 启动新转换任务 
+			logger.info("开始提交转换任务 ");
+			this.convertservice.execute(new ConvertRunnable(orifile, currentPath, fileName, this.convert_pdfroot, this.reconverttm));
+		}
+		
+		// 返回正在转换 , 等待转换完成  ;
+		logger.info("正在转换, 请等待 ....");
+		view.addObject("previewurl", viewpath);
+		view.addObject("showmsg", 3);
+		view.addObject("refreshtm", 2000);
+		view.addObject("msg", "正在生成预览文件...请稍后(生成完成后将自动刷新跳转)!");
+		
 		return view;
 	}
 }

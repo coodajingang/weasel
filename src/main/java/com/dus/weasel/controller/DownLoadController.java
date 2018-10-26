@@ -9,8 +9,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -30,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.dus.weasel.domain.FileUpResult;
+import com.dus.weasel.preview.ConvertRunnable;
 import com.dus.weasel.utils.FileUtil;
 import com.dus.weasel.utils.StringUtils;
 
@@ -44,6 +47,15 @@ public class DownLoadController {
 	
 	@Value("${download_tmproot}")
 	private String download_root;
+	
+	@Resource(name="convertThreadPool")
+	private ExecutorService convertservice;
+	
+	@Value("${convert_pdfroot}")
+	private String convert_pdfroot;
+	
+	@Value("${preview.reconverttm}")
+	private long reconverttm;
 	
 	@RequestMapping(value = "/upload")
 	public String upload(@RequestParam("file") MultipartFile file) {
@@ -103,10 +115,16 @@ public class DownLoadController {
 			// 拼接文件路径 
 			String filepath = FileUtil.contactPath(this.fileRoot, curpath);
 			filepath = FileUtil.contactPath(filepath, mulfile.getOriginalFilename());
+			File file = new File(filepath);
+			
+			// 判断是否允许预览  , 允许预览 且 无需转换时, 同步写预览文件  
+			// 不允许预览 , 则不写  
+			// 预览需要转换时  ,  则不写 
+			// 放异步中进行处理  
 			
 			try {
 				byte[] buf = new byte[1024];
-				stream = new BufferedOutputStream(new FileOutputStream(new File(filepath)));
+				stream = new BufferedOutputStream(new FileOutputStream(file));
 				InputStream in =  mulfile.getInputStream();
 				
 				while ((rcount = in.read(buf, 0, 1024)) != -1) {
@@ -126,6 +144,13 @@ public class DownLoadController {
 						
 					}
 				}
+			}
+			
+			// 1. 判断是否允许预览  
+			// 2. 判断是否需要转换 
+			// 放异步进行处理 
+			if (FileUtil.allowpreview(file)) {
+				this.convertservice.execute(new ConvertRunnable(file, curpath, mulfile.getOriginalFilename(), this.convert_pdfroot, this.reconverttm));
 			}
 			
 		} else {

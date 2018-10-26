@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>文档共享中心</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css"  href="dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="dist/css/fileinput.css">
+    <link rel="stylesheet" href="dist/css/weasel.css">
+
+	<style>
+	</style>
+</head>
+<body>
+    <!-- 导航条 -->
+    <div class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">华贸银行共享文档</a>
+                <a class="navbar-toggle" data-toggle="collapse" href="#menu">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+            </div>
+            <div id="menu" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown hidden"><a data-toggle="dropdown" href="#">菜单<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">联系我们</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#">关于</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="/">首页</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a data-toggle="modal" href="#login">登录</a></li>
+                </ul>
+                <form class="navbar-form navbar-right">
+                    <div class="form-group has-feedback">
+                        <label for="kw" class="sr-only">search key word</label>
+                        <input type="text" class="form-control" placeholder="搜索">
+                        <span class="glyphicon glyphicon-search form-control-feedback"></span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- 主体 -->
+    <div class="main">
+        <div class="container">
+            <!-- 内容部分 -->
+            <div class="row">
+
+				<!-- showmsg  : 1-错误  2-存在 3-正在转换  -->
+                <!-- 显示失败信息  -->
+                <div class="col-xs-12">
+                    <div th:if="${showmsg} == 1" class="alert alert-danger alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <strong>错误!</strong> <span th:text="${msg}">错误信息</span>
+                    </div>
+                </div>
+                <!-- 显示成功信息  -->
+                <div class="col-xs-12">
+                    <div th:if="${showmsg} == 2" class="alert alert-success alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <strong>成功!</strong> <span th:text="${msg}">成功信息</span>
+                    </div>
+                </div>
+                <!-- 显示等待信息  -->
+                <div class="col-xs-12">
+                    <div th:if="${showmsg} == 3" class="alert alert-warning alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <strong>Warning!</strong> <span th:text="${msg}">Waring信息</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- footer -->
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <p class="text-center">@Copyright 河南华贸银行</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dist/js/jquery-1.11.3.js"></script>
+    <script src="dist/js/bootstrap.js"></script>
+    <script src="dist/js/fileinput.js"></script>
+    <script>
+	    // 页面自动刷新  
+	    function myrefresh() {
+	        console.log("刷新")
+	        if ([[${showmsg}]] == 2) {
+	            window.location.href = "[[${previewurl}]]";
+	        } else {
+	        	window.location.reload();
+	        }
+	        
+	    }
+	
+	    setTimeout('myrefresh()', [[${refreshtm}]]); //指定1秒刷新一次
+
+    </script>
+
+</body>
+</html>

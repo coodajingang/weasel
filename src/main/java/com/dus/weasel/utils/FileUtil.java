@@ -11,12 +11,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dus.weasel.config.FileIconCssRegistry;
 import com.dus.weasel.domain.FileInfo;
 import com.dus.weasel.domain.FilePathInfo;
 
@@ -157,6 +159,23 @@ public class FileUtil {
 		return path + File.separator + curRelPath ;
 	}
 
+	public static String contactPath(String... paths) {
+		if (paths.length == 0) {
+			return "";
+		}
+		if (paths.length == 1) {
+			return paths[0];
+		}
+		
+		String tmpres = paths[0];
+		
+		for (int i = 1; i < paths.length ; ++i) {
+			tmpres = contactPath(tmpres, paths[i]);
+		}
+		
+		return tmpres;
+	}
+	
 	/**
 	 * 获取从当前目录 到跟目录的所有的路径  
 	 * @param rootFile
@@ -315,5 +334,86 @@ public class FileUtil {
 				compress(zos, f, name + File.separator + f.getName());
 			}
 		}
+	}
+
+	/** 
+	 * 根据图标获取相应的css class 
+	 * @param f
+	 * @return
+	 */
+	public static String getIconClass(File f) {
+		String ext = getFileExtension(f.getName());
+		return FileIconCssRegistry.getFileIconCss(ext);
+	}
+	
+	/**
+	 * 返回文件后缀 , 没有则返回空 
+	 * "" : null 
+	 * ".": 空
+	 * ".doc" : doc 
+	 * @param name
+	 * @return
+	 */
+	public static String getFileExtension(String name) {
+		int i = name.lastIndexOf(".");
+		
+		if (i == -1 ) {
+			return "";
+		}
+		return name.substring(i + 1);
+	}
+
+	/**
+	 * 根据文件后缀 判断文件是否允许预览  
+	 * @param f
+	 * @return
+	 */
+	public static boolean allowpreview(File f) {
+		String ext = getFileExtension(f.getName());
+		
+		return FileIconCssRegistry.getAllowpreview(ext);
+	}
+
+	/**
+	 * 根据文件后缀 判断文件是否允许转化为pdf  
+	 * @param f
+	 * @return
+	 */
+	public static boolean allowconvert(File f) {
+		String ext = getFileExtension(f.getName());
+		
+		return FileIconCssRegistry.getAllowconvert(ext);
+	}
+
+	/**
+	 * 根据原来的文件名称 ,确定预览的文件名称 ; 
+	 * 若允许转换, 则返回转换的文件名 ;
+	 * 否则 返回原文件名;
+	 * @param fileName
+	 * @return
+	 */
+	public static String previewFileName(String fileName) {
+		String ext = getFileExtension(fileName);
+		
+		if (FileIconCssRegistry.getAllowconvert(ext)) {
+			return fileName + ".pdf";
+		}
+		
+		return fileName;
+	}
+
+	/**
+	 * 转换文件系统路径 到 web url路径 
+	 * @param viewpath
+	 * @return
+	 */
+	public static String toUrlPath(String viewpath) {
+		String[] tmps = viewpath.split(Matcher.quoteReplacement(File.separator));
+		
+		if (tmps.length == 1) {
+			return viewpath;
+		}
+		
+		return StringUtils.join(tmps, "/");
 	}
 }

@@ -7,24 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css"  href="dist/css/bootstrap.css" />
     <link rel="stylesheet" href="dist/css/fileinput.css">
-    <style>
-        #file_list{
-            padding-left: 20px;
-        }
-        #file_list li {
-            line-height: 3rem;
-            border-bottom: 1px solid #dddddd;
-        }
-        #file_list li span {
-            margin-right: 1rem;
-        }
-        .footer{
-            margin-top: 30px;
-        }
-        .tab-pane {
-            padding: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="dist/css/weasel.css">
+
 </head>
 <body>
     <!-- 导航条 -->
@@ -98,7 +82,7 @@
                         <li>
                             <div class="row">
                                 <div class="col-xs-12 col-md-5">
-                                    <a th:href="@{/index.html(currentPath=${parentPath})}" class=""><span class="glyphicon glyphicon-folder-open"></span><b>..</b></a>
+                                    <span class="fileicon fileicon-parent-dir"></span><a th:href="@{/index.html(currentPath=${parentPath})}" class=""><b>返回上级目录</b></a>
                                 </div>
                                 <div class="col-xs-2 col-md-1">
                                     <i>大小</i>
@@ -112,14 +96,14 @@
                                 <div class="cold-xs-4 col-md-2">
                                     <a href="#" data-toggle="modal" data-target="#upload_modal" ><span class="glyphicon glyphicon-plus"></span></a>
                                     <!--  <a href="#" th:onclick="javascript:fun_del_link(0, -1)"><span class="glyphicon glyphicon-trash"></span></a> -->
-                                    <a th:href="@{/index.html(currentPath=${currentPath})}"><span class="glyphicon glyphicon-refresh"></span></a>
+                                    <a id="refreshcurrent" th:href="@{/index.html(currentPath=${currentPath})}"><span class="glyphicon glyphicon-refresh"></span></a>
                                 </div>
                             </div>
                         </li>
                         <li th:each="d:${linklist}">
                             <div class="row">
                                 <div class="col-xs-12 col-md-5">
-                                    <a th:href="${d.getLinkaddr()}" target="_blank" class=""><span class="glyphicon glyphicon-link"></span><span  th:text="${d.getName()}">链接1</span></a>
+                                    <span class="fileicon fileicon-links"></span><a th:href="${d.getLinkaddr()}" target="_blank" class=""><span  th:text="${d.getName()}">链接1</span></a>
                                 </div>
                                 <div class="col-xs-2 col-md-1">
                                     <i> </i>
@@ -139,7 +123,7 @@
                         <li th:each="d:${dirlist}">
                             <div class="row">
                                 <div class="col-xs-12 col-md-5">
-                                    <a th:href="@{/index.html(currentPath=${currentPath},subPath=${d.getName()})}" class=""><span class="glyphicon glyphicon-folder-close"></span><span  th:text="${d.getName()}">目录</span></a>
+                                    <span class="fileicon fileicon-dir"></span><a th:href="@{/index.html(currentPath=${currentPath},subPath=${d.getName()})}" class=""><span  th:text="${d.getName()}">目录</span></a>
                                 </div>
                                 <div class="col-xs-2 col-md-1">
                                     <i> </i>
@@ -160,7 +144,9 @@
                         <li th:each="d:${filelist}">
                             <div class="row">
                                 <div class="col-xs-12 col-md-5">
-                                    <a th:href="@{/download(currentPath=${currentPath}, fileName=${d.getName()})}" class=""><span class="glyphicon glyphicon-file"></span><span  th:text="${d.getName()}">文件1</span></a>
+                                    <span class="glyphicon glyphicon-file" th:class="${d.iconClass}"></span>
+                                    <a th:if="${d.allowpreview}" th:href="@{/preview(currentPath=${currentPath}, fileName=${d.getName()})}" target="_blank"><span  th:text="${d.getName()}">文件1</span></a>
+                                    <a th:if="${not d.allowpreview}" th:href="@{/download(currentPath=${currentPath}, fileName=${d.getName()})}" ><span  th:text="${d.getName()}">文件1</span></a>
                                 </div>
                                 <div class="col-xs-2 col-md-1">
                                     <i th:text="${d.getSize()}">1M</i>
@@ -304,9 +290,15 @@
         	  $('#uppath2').val($('#currentPath').val());
         });
         
+        // 新增modal关闭时, 触发刷新 
+        $('#upload_modal').on('hidden.bs.modal', function (e) {
+      	  //$('#refreshcurrent').click();
+      		document.getElementById("refreshcurrent").click();
+      	});
+        
         $('#upfile').fileinput({
             uploadUrl: "/batchupload", //上传的地址
-            allowedFileExtensions: ['jpg', 'gif', 'png','doc','docx','pdf','ppt','pptx','txt', 'xls', 'xlsx'],//接收的文件后缀
+            //allowedFileExtensions: ['jpg', 'gif', 'png','doc','docx','pdf','ppt','pptx','txt', 'xls', 'xlsx'],//接收的文件后缀
             maxFilesNum : 50,//上传最大的文件数量
             //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
             uploadAsync: true, //默认异步上传
